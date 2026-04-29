@@ -1,0 +1,682 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  background-color: #e9f0f5;
+}
+
+/* 顶部导航栏 */
+.navbar {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 背景图片容器 */
+.navbar-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* 单个背景图片 */
+.background-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center 35%;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 3s ease-in-out;
+}
+
+/* 当前激活的图片 - 淡入显示 */
+.background-image.active {
+  opacity: 1;
+  animation: fadeIn 1.5s ease-in-out;
+}
+
+/* 正在淡出的图片 */
+.background-image.fade-out {
+  opacity: 1;
+  animation: fadeOut 3s ease-in-out forwards;
+}
+
+/* 淡入动画 */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* 淡出动画 */
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.navbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 20, 40, 0.45);
+  z-index: 1;
+}
+
+.nav-text {
+  position: relative;
+  z-index: 2;
+  padding: 3.2rem 2rem;
+  text-align: center;
+  color: white;
+  text-shadow: 2px 2px 12px rgba(0, 0, 0, 0.7);
+}
+
+.nav-text h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.nav-text p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+/* 菜单栏 */
+.menu-bar {
+  background-color: #2c3e4e;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  margin-top: 1px;
+}
+
+.menu-list {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 5px;
+  flex-wrap: wrap;
+}
+
+.menu-left,
+.menu-right {
+  display: flex;
+  align-items: center;
+}
+
+.menu-list a {
+  display: inline-block;
+  padding: 14px 28px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #f0f9ff;
+  letter-spacing: 1px;
+  transition: all 0.25s ease;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+}
+
+.menu-list a:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-bottom-color: #5bc0de;
+  transform: translateY(-1px);
+}
+
+/* 系统管理一级菜单 */
+.system-menu-link {
+  display: inline-block;
+  padding: 14px 28px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #f0f9ff;
+  letter-spacing: 1px;
+  transition: all 0.25s ease;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+.system-menu-link:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-bottom-color: #5bc0de;
+  transform: translateY(-1px);
+}
+
+.system-arrow {
+  font-size: 0.7rem;
+  margin-left: 6px;
+}
+
+/* 系统管理下拉菜单：与一级菜单保持一致 */
+.system-dropdown-popper {
+  background-color: #2c3e4e !important;
+  border: none !important;
+  border-radius: 0 0 8px 8px !important;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18) !important;
+  overflow: hidden;
+}
+
+.system-dropdown-popper .el-dropdown-menu {
+  background-color: #2c3e4e !important;
+  border: none !important;
+  padding: 4px 0;
+}
+
+.system-dropdown-popper .el-dropdown-menu__item {
+  color: #f0f9ff !important;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 12px 28px;
+  background-color: #2c3e4e !important;
+}
+
+.system-dropdown-popper .el-dropdown-menu__item:hover,
+.system-dropdown-popper .el-dropdown-menu__item:focus {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+.system-dropdown-popper .el-popper__arrow::before {
+  background-color: #2c3e4e !important;
+  border: none !important;
+}
+
+/* 主体区域：改成 grid，防止右侧登录模块掉到下面 */
+.main-container {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(320px, 3fr);
+  width: 100%;
+}
+
+/* 左侧文章区域 */
+.left-table {
+  min-width: 0;
+  background-color: #f5f9fa;
+  padding: 24px;
+  min-height: 520px;
+  box-sizing: border-box;
+}
+
+/* 右侧登录区域 */
+.right-forms {
+  min-width: 0;
+  background-color: #ffffff;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.03);
+  box-sizing: border-box;
+}
+
+/* 未登录提示区域 */
+.empty-panel {
+  min-height: 460px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 8px 28px rgba(20, 60, 90, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-panel h2 {
+  color: #1e4663;
+  font-size: 2rem;
+  margin-bottom: 14px;
+}
+
+.empty-panel p {
+  color: #6c7a86;
+  font-size: 1rem;
+}
+
+/* 登录后文章列表顶部 */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  background: #ffffff;
+  padding: 18px 20px;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(20, 60, 90, 0.06);
+}
+
+.section-header h1,
+.section-header h2 {
+  color: #1e4663;
+  font-size: 2.2rem;
+  margin-bottom: 4px;
+  letter-spacing: 2px;
+  font-family: 'LiSu', 'Roboto', 'Helvetica Neue', sans-serif;
+}
+
+.section-header p {
+  color: #6c7a86;
+  font-size: 0.95rem;
+}
+
+/* 用户头像区域 */
+.user-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.header-avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #e5edf3;
+  box-shadow: 0 4px 12px rgba(20, 60, 90, 0.15);
+  background-color: #f3f6f8;
+}
+
+/* 退出登录按钮 */
+.logout-btn {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 20px;
+  background-color: #8b9aaa;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.logout-btn:hover {
+  background-color: #6f7f8f;
+}
+
+/* Element Plus 表格 */
+.el-table {
+  width: 100%;
+}
+
+.left-table .el-table {
+  width: 100%;
+}
+
+/* 分页 */
+.pagination-wrap {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+}
+
+/* 右侧卡片 */
+.tile {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.tile h3 {
+  margin-bottom: 16px;
+  color: #1e4663;
+  border-left: 4px solid #5fa7c2;
+  padding-left: 12px;
+}
+
+.tile p {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tile label {
+  width: 70px;
+  font-weight: 500;
+  color: #2c3e4e;
+}
+
+.tile input {
+  flex: 1;
+  min-width: 120px;
+  padding: 8px 12px;
+  border: 1px solid #cfdfe8;
+  border-radius: 20px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.tile input:focus,
+.dialog-form input:focus {
+  border-color: #5f9bbf;
+  box-shadow: 0 0 0 2px rgba(95, 155, 191, 0.2);
+}
+
+/* 按钮组 */
+.button-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.btn-submit,
+.btn-register,
+.btn-cancel {
+  flex: 1;
+  padding: 9px 20px;
+  border: none;
+  border-radius: 28px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.btn-submit {
+  background-color: #2c6e8f;
+  color: white;
+}
+
+.btn-submit:hover {
+  background-color: #1e4f6e;
+  transform: scale(0.98);
+}
+
+.btn-register {
+  background-color: #4f8f7a;
+  color: white;
+}
+
+.btn-register:hover {
+  background-color: #3d7564;
+  transform: scale(0.98);
+}
+
+.btn-cancel {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background-color: #495057;
+  transform: scale(0.98);
+}
+
+/* 登录状态 */
+.login-status {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background-color: #e7f6ee;
+  color: #276749;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.login-status.not-login {
+  background-color: #f5f6f8;
+  color: #6c757d;
+}
+
+/* 系统说明 */
+.info-text {
+  color: #5f6f7a;
+  line-height: 1.8;
+  font-size: 0.95rem;
+}
+
+/* 下载链接 */
+.download-link,
+.download-disabled {
+  display: inline-block;
+  min-width: 36px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.download-link {
+  color: #2c6e8f;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.download-link:hover {
+  text-decoration: underline;
+}
+
+.download-disabled {
+  color: #a0a8b0;
+  cursor: not-allowed;
+  text-decoration: none;
+  opacity: 0.7;
+  user-select: none;
+}
+
+/* 注册弹窗表单 */
+.dialog-form {
+  padding: 4px 6px 0;
+}
+
+.form-item {
+  margin-bottom: 16px;
+}
+
+.form-item label {
+  display: block;
+  margin-bottom: 8px;
+  color: #2c3e4e;
+  font-weight: 600;
+}
+
+.form-item input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #cfdfe8;
+  border-radius: 22px;
+  outline: none;
+  transition: 0.2s;
+  font-size: 0.95rem;
+}
+
+.dialog-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+/* 注册头像预览 */
+.avatar-preview {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid #cfdfe8;
+  background-color: #f5f9fa;
+}
+
+.avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 头像下拉选项 */
+.avatar-popper .el-select-dropdown__item {
+  height: 50px;
+  line-height: 50px;
+}
+
+.admin-auth-form {
+  padding: 4px 6px 0;
+}
+
+.code-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.code-row input {
+  flex: 1;
+}
+
+.send-code-btn {
+  flex-shrink: 0;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 20px;
+  background-color: #2c6e8f;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.send-code-btn:hover {
+  background-color: #1e4f6e;
+}
+
+.send-code-btn:disabled {
+  background-color: #a0a8b0;
+  cursor: not-allowed;
+}
+
+.auth-tip {
+  margin-top: 6px;
+  color: #8b9aaa;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+
+/* 摘要悬浮提示框：固定 400px，使用暖白米色 */
+:global(.abstract-tooltip) {
+  max-width: 400px !important;
+  width: 400px !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  line-height: 1.75;
+  background-color: #fffaf0 !important;
+  color: #3f3a2f !important;
+  border: 1px solid #e6d7b8 !important;
+  border-radius: 10px !important;
+  padding: 13px 15px !important;
+  box-shadow: 0 8px 22px rgba(88, 72, 38, 0.18) !important;
+  font-size: 14px;
+}
+
+:global(.abstract-tooltip .el-popper__arrow::before) {
+  background-color: #fffaf0 !important;
+  border: 1px solid #e6d7b8 !important;
+}
+
+/* 中等屏幕：仍然保持左右结构，不让右侧登录模块轻易掉下去 */
+@media (max-width: 900px) {
+  .main-container {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+  }
+
+  .left-table {
+    padding: 18px;
+  }
+
+  .right-forms {
+    padding: 16px;
+  }
+
+  .section-header h1,
+  .section-header h2 {
+    font-size: 1.8rem;
+  }
+}
+
+/* 小屏幕：手机端才上下排列 */
+@media (max-width: 650px) {
+  .main-container {
+    grid-template-columns: 1fr;
+  }
+
+  .left-table,
+  .right-forms {
+    width: 100%;
+  }
+
+  .right-forms {
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-text h1 {
+    font-size: 2rem;
+  }
+
+  .menu-list a,
+  .system-menu-link {
+    padding: 12px 18px;
+    font-size: 0.95rem;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .logout-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 550px) {
+  .menu-list {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .menu-left,
+  .menu-right {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .button-group,
+  .dialog-buttons {
+    flex-direction: column;
+  }
+
+  .empty-panel h2 {
+    font-size: 1.5rem;
+  }
+
+  .empty-panel p {
+    padding: 0 18px;
+    text-align: center;
+  }
+}
