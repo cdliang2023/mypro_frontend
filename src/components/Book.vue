@@ -323,7 +323,7 @@ const props = defineProps({
 const emit = defineEmits(['logout-success'])
 
 const currentPage = ref(1)
-const pageSize = ref(10)
+const pageSize = ref(8)
 
 const searchForm = reactive({
   keyword: '',

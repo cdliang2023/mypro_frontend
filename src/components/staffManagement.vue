@@ -51,6 +51,18 @@
         </div>
 
         <div class="menu-right">
+          <div v-if="adminAuthed" class="admin-status">
+            <span>管理员已登录：admin</span>
+
+            <button
+              type="button"
+              class="admin-logout-btn"
+              @click="logoutAdmin"
+            >
+              退出管理
+            </button>
+          </div>
+
           <el-dropdown
             trigger="hover"
             popper-class="system-dropdown-popper"
@@ -277,11 +289,25 @@ function handleBook() {
 function handleLoginSuccess(user) {
   currentUser.value = user
   localStorage.setItem('currentUser', JSON.stringify(user))
+
+  // 普通用户登录不等于管理员登录
+  // 每次普通用户登录时，清除旧的系统管理权限
+  clearAdminAuth()
 }
 
 function clearAdminAuth() {
   adminAuthed.value = false
   sessionStorage.removeItem('adminAuthed')
+}
+
+function logoutAdmin() {
+  clearAdminAuth()
+
+  if (currentView.value === 'userManage' || currentView.value === 'paperManage') {
+    currentView.value = 'first'
+  }
+
+  ElMessage.info('管理员已退出，需要重新动态密码验证')
 }
 
 function handleLogoutSuccess() {
@@ -421,3 +447,30 @@ function startCountdown() {
   }, 1000)
 }
 </script>
+
+<style scoped>
+.admin-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #f0f9ff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-right: 12px;
+}
+
+.admin-logout-btn {
+  border: none;
+  border-radius: 16px;
+  padding: 6px 12px;
+  background-color: #8b9aaa;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.admin-logout-btn:hover {
+  background-color: #6f7f8f;
+}
+</style>
