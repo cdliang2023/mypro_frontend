@@ -147,6 +147,12 @@
           </p>
 
           <div class="captcha-image-row">
+            <button
+              type="button"
+              class="captcha-refresh-btn"
+              @click="refreshCaptcha">
+              换一张
+            </button>
             <span class="captcha-label-placeholder"></span>
 
             <img
@@ -157,13 +163,7 @@
               @click="refreshCaptcha"
             />
 
-            <button
-              type="button"
-              class="captcha-refresh-btn"
-              @click="refreshCaptcha"
-            >
-              换一张
-            </button>
+            
           </div>
 
           <div class="button-group">
@@ -676,12 +676,12 @@ function handleDownload(row) {
 }
 
 .captcha-label-placeholder {
-  width: 70px;
+  width: 10px;
   flex-shrink: 0;
 }
 
 .captcha-img {
-  width: 120px;
+  width: 160px;
   height: 40px;
   border: 1px solid #cfdfe8;
   border-radius: 8px;
@@ -693,9 +693,9 @@ function handleDownload(row) {
 .captcha-refresh-btn {
   flex-shrink: 0;
   padding: 8px 12px;
-  border: none;
-  border-radius: 18px;
-  background-color: #8b9aaa;
+  border: 1px;
+  border-radius: 5px;
+  background-color: #8e6c2b;
   color: #ffffff;
   font-weight: 600;
   cursor: pointer;

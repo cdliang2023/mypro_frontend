@@ -1,8 +1,6 @@
 <template>
   <div class="main-container">
-    <!-- 左侧：图书销售主体区域 -->
     <div class="left-table">
-      <!-- 未登录时 -->
       <template v-if="!isLogin">
         <div class="empty-panel">
           <h2>专业书籍销售管理系统</h2>
@@ -10,9 +8,7 @@
         </div>
       </template>
 
-      <!-- 登录后 -->
       <template v-else>
-        <!-- 顶部用户信息 -->
         <div class="section-header">
           <div class="user-header">
             <img
@@ -27,17 +23,11 @@
                 当前用户：{{ currentUser?.usrName }}
               </p>
 
-              <p
-                v-if="hasDownloadRight"
-                style="color: #2c6e8f; font-size: 0.9rem;"
-              >
+              <p v-if="hasDownloadRight" style="color: #2c6e8f; font-size: 0.9rem;">
                 购买权限：已开通
               </p>
 
-              <p
-                v-else
-                style="color: #a0a8b0; font-size: 0.9rem;"
-              >
+              <p v-else style="color: #a0a8b0; font-size: 0.9rem;">
                 购买权限：未开通
               </p>
             </div>
@@ -52,7 +42,6 @@
           </button>
         </div>
 
-        <!-- 搜索区域 -->
         <div class="book-search-box">
           <el-input
             v-model="searchForm.keyword"
@@ -83,100 +72,71 @@
           </button>
         </div>
 
-        <!-- 图书表格 -->
-        <el-table
-          :data="pagedBookData"
-          stripe
-          border
-          style="width: 100%"
-        >
-          <el-table-column
-            prop="bookName"
-            label="书籍名称"
-            align="center"
-            min-width="180"
-          />
-
-          <el-table-column
-            prop="author"
-            label="作者"
-            align="center"
-            width="120"
-          />
-
-          <el-table-column
-            prop="publisher"
-            label="出版社"
-            align="center"
-            min-width="160"
-          />
-
-          <el-table-column
-            prop="category"
-            label="分类"
-            align="center"
-            width="120"
-          />
-
-          <el-table-column
-            prop="price"
-            label="价格"
-            align="center"
-            width="100"
+        <div class="book-grid">
+          <div
+            v-for="book in pagedBookData"
+            :key="book.id"
+            class="book-card"
           >
-            <template #default="{ row }">
-              ￥{{ row.price.toFixed(2) }}
-            </template>
-          </el-table-column>
+            <div class="book-cover">
+              <div class="cover-title">
+                {{ book.bookName }}
+              </div>
+            </div>
 
-          <el-table-column
-            prop="stock"
-            label="库存"
-            align="center"
-            width="90"
-          >
-            <template #default="{ row }">
-              <span v-if="row.stock > 0">{{ row.stock }}</span>
-              <span v-else style="color: #c0392b;">缺货</span>
-            </template>
-          </el-table-column>
+            <div class="book-text">
+              <h3>{{ book.bookName }}</h3>
 
-          <el-table-column
-            prop="description"
-            label="简介"
-            align="center"
-            min-width="220"
-            :show-overflow-tooltip="true"
-          />
+              <p>
+                <strong>作者：</strong>{{ book.author }}
+              </p>
 
-          <el-table-column
-            label="操作"
-            align="center"
-            width="130"
-          >
-            <template #default="{ row }">
-              <button
-                v-if="hasDownloadRight"
-                class="small-buy-btn"
-                type="button"
-                :disabled="row.stock <= 0"
-                @click="openBuyDialog(row)"
-              >
-                立即购买
-              </button>
+              <p>
+                <strong>出版社：</strong>{{ book.publisher }}
+              </p>
 
-              <span
-                v-else
-                class="download-disabled"
-                title="当前用户没有购买权限"
-              >
-                购买
-              </span>
-            </template>
-          </el-table-column>
-        </el-table>
+              <p>
+                <strong>分类：</strong>{{ book.category }}
+              </p>
 
-        <!-- 分页 -->
+              <p>
+                <strong>价格：</strong>
+                <span class="book-price">￥{{ book.price.toFixed(2) }}</span>
+              </p>
+
+              <p>
+                <strong>库存：</strong>
+                <span v-if="book.stock > 0">{{ book.stock }}</span>
+                <span v-else class="stock-empty">缺货</span>
+              </p>
+
+              <p class="book-description">
+                {{ book.description }}
+              </p>
+
+              <div class="book-action">
+                <button
+                  v-if="hasDownloadRight"
+                  class="small-buy-btn"
+                  type="button"
+                  :disabled="book.stock <= 0"
+                  @click="openBuyDialog(book)"
+                >
+                  立即购买
+                </button>
+
+                <span
+                  v-else
+                  class="download-disabled"
+                  title="当前用户没有购买权限"
+                >
+                  购买
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="pagination-wrap">
           <el-pagination
             background
@@ -189,7 +149,6 @@
       </template>
     </div>
 
-    <!-- 右侧：登录状态 + 订单信息 -->
     <div class="right-forms">
       <div class="tile login-tile">
         <h3>用户状态</h3>
@@ -278,7 +237,6 @@
       </div>
     </div>
 
-    <!-- 购买弹窗 -->
     <el-dialog
       v-model="buyDialogVisible"
       title="确认购买"
@@ -288,20 +246,12 @@
       <div v-if="selectedBook" class="dialog-form">
         <div class="form-item">
           <label>书籍名称</label>
-          <input
-            type="text"
-            :value="selectedBook.bookName"
-            disabled
-          />
+          <input type="text" :value="selectedBook.bookName" disabled />
         </div>
 
         <div class="form-item">
           <label>单价</label>
-          <input
-            type="text"
-            :value="'￥' + selectedBook.price.toFixed(2)"
-            disabled
-          />
+          <input type="text" :value="'￥' + selectedBook.price.toFixed(2)" disabled />
         </div>
 
         <div class="form-item">
@@ -373,7 +323,7 @@ const props = defineProps({
 const emit = defineEmits(['logout-success'])
 
 const currentPage = ref(1)
-const pageSize = ref(8)
+const pageSize = ref(10)
 
 const searchForm = reactive({
   keyword: '',
@@ -401,11 +351,9 @@ const currentUser = computed(() => {
 })
 
 const hasDownloadRight = computed(() => {
-  
   return Number(currentUser.value?.downloadRight || 0) > 0
 })
 
-// 静态图书数据：下一步再改成从后端数据库读取
 const bookList = ref([
   {
     id: 1,
@@ -496,6 +444,36 @@ const bookList = ref([
     price: 63.0,
     stock: 14,
     description: '面向数据库应用开发，介绍 SQL 查询、表设计和事务处理。'
+  },
+  {
+    id: 10,
+    bookName: '数字化转型管理',
+    author: '吴晓波',
+    publisher: '浙江大学出版社',
+    category: '创新管理',
+    price: 58.0,
+    stock: 19,
+    description: '围绕企业数字化转型，介绍战略规划、组织变革和数据驱动管理。'
+  },
+  {
+    id: 11,
+    bookName: '大数据管理与应用',
+    author: '李强',
+    publisher: '科学出版社',
+    category: '数据分析',
+    price: 72.0,
+    stock: 15,
+    description: '介绍大数据平台、数据治理、数据分析方法与管理应用场景。'
+  },
+  {
+    id: 12,
+    bookName: '管理研究方法',
+    author: '陈晓萍',
+    publisher: '北京大学出版社',
+    category: '论文写作',
+    price: 65.0,
+    stock: 11,
+    description: '系统讲解管理学研究中的问题提出、理论建构、变量测量和实证分析。'
   }
 ])
 
@@ -536,7 +514,6 @@ const orderAmount = computed(() => {
   return selectedBook.value.price * buyForm.quantity
 })
 
-// 加载头像图片
 const avatarImages = import.meta.glob('/src/assets/image/*.jpg', {
   eager: true,
   import: 'default'
@@ -693,16 +670,95 @@ function logout() {
   background: #f7f9fb;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.book-card {
+  min-height: 176px;
+  padding: 14px;
+  border: 1px solid #d9e2ec;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 3px 12px rgba(20, 60, 90, 0.06);
+  overflow: hidden;
+}
+
+.book-card::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
+.book-cover {
+  float: left;
+  width: 92px;
+  height: 128px;
+  margin: 0 14px 8px 0;
+  border-radius: 8px;
+  background: linear-gradient(145deg, #2c6e8f, #5fa7c2);
+  box-shadow: 0 5px 14px rgba(44, 110, 143, 0.25);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  text-align: center;
+}
+
+.cover-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: 1px;
+}
+
+.book-text h3 {
+  margin: 0 0 7px;
+  color: #1e4663;
+  font-size: 1.08rem;
+}
+
+.book-text p {
+  margin: 4px 0;
+  color: #4f5f69;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.book-price {
+  color: #c0392b;
+  font-weight: 700;
+}
+
+.stock-empty {
+  color: #c0392b;
+  font-weight: 700;
+}
+
+.book-description {
+  text-align: justify;
+}
+
+.book-action {
+  margin-top: 8px;
+  text-align: right;
 }
 
 .small-buy-btn {
-  padding: 6px 12px;
+  padding: 6px 13px;
   border: none;
-  border-radius: 6px;
+  border-radius: 18px;
   background-color: #2c6e8f;
   color: #fff;
   cursor: pointer;
   font-size: 13px;
+  font-weight: 600;
 }
 
 .small-buy-btn:hover {
@@ -725,5 +781,11 @@ function logout() {
 
 .order-card p {
   margin: 4px 0;
+}
+
+@media (max-width: 900px) {
+  .book-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

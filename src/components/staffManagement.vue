@@ -2,7 +2,6 @@
   <div class="app">
     <!-- 顶部导航栏 -->
     <div class="navbar">
-      <!-- 背景图片容器 -->
       <div class="navbar-background">
         <div
           v-for="(image, index) in images"
@@ -51,7 +50,6 @@
           </a>
         </div>
 
-        <!-- 系统管理下拉菜单 -->
         <div class="menu-right">
           <el-dropdown
             trigger="hover"
@@ -154,7 +152,6 @@ import Book from './Book.vue'
 import UserManage from './UserManage.vue'
 import PaperManage from './PaperManage.vue'
 
-// 导入本地图片
 import index0 from '../assets/image/index/index0.jpg'
 import index1 from '../assets/image/index/index1.jpg'
 import index2 from '../assets/image/index/index2.jpg'
@@ -165,11 +162,7 @@ import index5 from '../assets/image/index/index5.jpg'
 const API_BASE_URL = 'http://localhost:8080/api'
 
 const adminAuthed = ref(sessionStorage.getItem('adminAuthed') === 'true')
-
-// 当前显示的页面
 const currentView = ref('first')
-
-// 当前登录用户，由 First.vue 登录成功后传过来
 const currentUser = ref(null)
 
 const isLogin = computed(() => {
@@ -188,13 +181,11 @@ const adminForm = ref({
   code: ''
 })
 
-// 图片轮播相关
 const images = [index0, index1, index2, index3, index4, index5]
 const currentImageIndex = ref(0)
 const isFadingOut = ref(false)
 let imageRotationTimer = null
 
-// 当前动态组件
 const currentComponent = computed(() => {
   if (currentView.value === 'first') {
     return First
@@ -215,13 +206,11 @@ const currentComponent = computed(() => {
   return First
 })
 
-// 组件挂载时：恢复登录状态 + 启动顶部图片轮播
 onMounted(() => {
   loadLoginState()
   startImageRotation()
 })
 
-// 组件卸载时清理定时器
 onUnmounted(() => {
   if (imageRotationTimer) {
     clearInterval(imageRotationTimer)
@@ -234,7 +223,6 @@ onUnmounted(() => {
   }
 })
 
-// 从 localStorage 恢复登录状态
 function loadLoginState() {
   const savedUser = localStorage.getItem('currentUser')
 
@@ -253,7 +241,6 @@ function loadLoginState() {
   }
 }
 
-// 图片轮播函数
 function rotateImage() {
   isFadingOut.value = true
 
@@ -263,7 +250,6 @@ function rotateImage() {
   }, 3000)
 }
 
-// 启动图片轮播
 function startImageRotation() {
   if (imageRotationTimer) {
     clearInterval(imageRotationTimer)
@@ -272,12 +258,10 @@ function startImageRotation() {
   imageRotationTimer = setInterval(rotateImage, 10000)
 }
 
-// 首页
 function goHome() {
   currentView.value = 'first'
 }
 
-// 专业书籍
 function handleBook() {
   loadLoginState()
 
@@ -290,50 +274,55 @@ function handleBook() {
   currentView.value = 'book'
 }
 
-// First.vue 登录成功后触发
 function handleLoginSuccess(user) {
   currentUser.value = user
   localStorage.setItem('currentUser', JSON.stringify(user))
 }
 
-// First.vue 退出登录后触发
+function clearAdminAuth() {
+  adminAuthed.value = false
+  sessionStorage.removeItem('adminAuthed')
+}
+
 function handleLogoutSuccess() {
   currentUser.value = null
   localStorage.removeItem('currentUser')
   localStorage.removeItem('token')
+
+  clearAdminAuth()
+
   currentView.value = 'first'
 }
 
-// 工作论文
 function handleWorkingPaper() {
   ElMessage.info('工作论文功能开发中')
 }
 
-// 最新文献
 function handleLatest() {
   ElMessage.info('最新文献功能开发中')
 }
 
-// 系统管理菜单
 function handleSystemCommand(command) {
   if (command !== 'userManage' && command !== 'paperManage') {
     return
   }
 
-  if (adminAuthed.value) {
-    currentView.value = command
+  if (!adminAuthed.value) {
+    openAdminDialog(command)
     return
   }
 
-  openAdminDialog(command)
+  currentView.value = command
 }
 
 function openAdminDialog(targetView) {
   pendingTargetView.value = targetView
+
   adminForm.value = {
     adminName: 'admin',
     code: ''
   }
+
   adminDialogVisible.value = true
 }
 
@@ -398,15 +387,15 @@ async function verifyAdmin() {
     })
 
     if (res.data && res.data.success) {
-  ElMessage.success(res.data.message || '验证成功')
+      ElMessage.success(res.data.message || '验证成功')
 
-  adminAuthed.value = true
-  sessionStorage.setItem('adminAuthed', 'true')
+      adminAuthed.value = true
+      sessionStorage.setItem('adminAuthed', 'true')
 
-  currentView.value = pendingTargetView.value || 'userManage'
+      currentView.value = pendingTargetView.value || 'userManage'
 
-  closeAdminDialog()
-}else {
+      closeAdminDialog()
+    } else {
       ElMessage.error(res.data.message || '管理员验证失败')
     }
   } catch (error) {
