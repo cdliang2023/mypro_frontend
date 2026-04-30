@@ -164,6 +164,8 @@ import index5 from '../assets/image/index/index5.jpg'
 
 const API_BASE_URL = 'http://localhost:8080/api'
 
+const adminAuthed = ref(sessionStorage.getItem('adminAuthed') === 'true')
+
 // 当前显示的页面
 const currentView = ref('first')
 
@@ -314,15 +316,16 @@ function handleLatest() {
 
 // 系统管理菜单
 function handleSystemCommand(command) {
-  if (command === 'userManage') {
-    openAdminDialog('userManage')
+  if (command !== 'userManage' && command !== 'paperManage') {
     return
   }
 
-  if (command === 'paperManage') {
-    openAdminDialog('paperManage')
+  if (adminAuthed.value) {
+    currentView.value = command
     return
   }
+
+  openAdminDialog(command)
 }
 
 function openAdminDialog(targetView) {
@@ -395,12 +398,15 @@ async function verifyAdmin() {
     })
 
     if (res.data && res.data.success) {
-      ElMessage.success(res.data.message || '验证成功')
+  ElMessage.success(res.data.message || '验证成功')
 
-      currentView.value = pendingTargetView.value || 'userManage'
+  adminAuthed.value = true
+  sessionStorage.setItem('adminAuthed', 'true')
 
-      closeAdminDialog()
-    } else {
+  currentView.value = pendingTargetView.value || 'userManage'
+
+  closeAdminDialog()
+}else {
       ElMessage.error(res.data.message || '管理员验证失败')
     }
   } catch (error) {

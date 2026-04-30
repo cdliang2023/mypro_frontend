@@ -1,9 +1,6 @@
 <template>
-  <!-- 主体区域 -->
   <div class="main-container">
-    <!-- 左侧区域 -->
     <div class="left-table">
-      <!-- 未登录时：不显示空分页器 -->
       <template v-if="!isLogin">
         <div class="empty-panel">
           <h2>欢迎使用论文管理信息系统</h2>
@@ -11,7 +8,6 @@
         </div>
       </template>
 
-      <!-- 登录成功后：显示文章表格和分页器 -->
       <template v-else>
         <div class="section-header">
           <div class="user-header">
@@ -27,17 +23,11 @@
                 当前用户：{{ currentUser?.usrName }}
               </p>
 
-              <p
-                v-if="hasDownloadRight"
-                style="color: #2c6e8f; font-size: 0.9rem;"
-              >
+              <p v-if="hasDownloadRight" style="color: #2c6e8f; font-size: 0.9rem;">
                 下载权限：已开通
               </p>
 
-              <p
-                v-else
-                style="color: #a0a8b0; font-size: 0.9rem;"
-              >
+              <p v-else style="color: #a0a8b0; font-size: 0.9rem;">
                 下载权限：未开通
               </p>
             </div>
@@ -71,9 +61,7 @@
             label="摘要"
             align="center"
             min-width="260"
-            :show-overflow-tooltip="{
-              popperClass: 'abstract-tooltip'
-            }"
+            :show-overflow-tooltip="{ popperClass: 'abstract-tooltip' }"
           />
 
           <el-table-column
@@ -123,7 +111,6 @@
       </template>
     </div>
 
-    <!-- 右侧登录表单 -->
     <div class="right-forms">
       <div class="tile login-tile">
         <form @submit.prevent="handleLogin">
@@ -148,6 +135,36 @@
               placeholder="请输入密码"
             />
           </p>
+
+          <p>
+            <label for="login-captcha">验证码：</label>
+            <input
+              id="login-captcha"
+              type="text"
+              v-model="loginForm.captchaCode"
+              placeholder="请输入验证码"
+            />
+          </p>
+
+          <div class="captcha-image-row">
+            <span class="captcha-label-placeholder"></span>
+
+            <img
+              v-if="captchaImg"
+              :src="captchaImg"
+              class="captcha-img"
+              title="点击刷新验证码"
+              @click="refreshCaptcha"
+            />
+
+            <button
+              type="button"
+              class="captcha-refresh-btn"
+              @click="refreshCaptcha"
+            >
+              换一张
+            </button>
+          </div>
 
           <div class="button-group">
             <button type="submit" class="btn-submit">
@@ -181,7 +198,6 @@
       </div>
     </div>
 
-    <!-- 注册弹窗 -->
     <el-dialog
       v-model="registerDialogVisible"
       title="新用户注册"
@@ -291,10 +307,6 @@ const emit = defineEmits(['login-success', 'logout-success'])
 const API_BASE_URL = 'http://localhost:8080/api'
 const API_HOST = 'http://localhost:8080'
 
-// 如果后端在 192.168.2.19，可以改成：
-// const API_BASE_URL = 'http://192.168.2.19:8080/api'
-// const API_HOST = 'http://192.168.2.19:8080'
-
 const isLogin = ref(false)
 const currentUser = ref(null)
 
@@ -304,8 +316,12 @@ const hasDownloadRight = computed(() => {
 
 const loginForm = ref({
   username: '',
-  password: ''
+  password: '',
+  captchaCode: ''
 })
+
+const captchaImg = ref('')
+const captchaId = ref('')
 
 const registerDialogVisible = ref(false)
 
@@ -323,7 +339,6 @@ const pageSize = ref(8)
 const total = ref(0)
 const articleLoading = ref(false)
 
-// 加载头像图片
 const avatarImages = import.meta.glob('/src/assets/image/*.jpg', {
   eager: true,
   import: 'default'
@@ -369,7 +384,30 @@ const defaultAvatar =
 
 onMounted(() => {
   restoreLoginState()
+  refreshCaptcha()
 })
+
+async function refreshCaptcha() {
+  try {
+    const res = await axios.get(`${API_BASE_URL}/captcha`, {
+      responseType: 'blob',
+      params: {
+        t: Date.now()
+      }
+    })
+
+    captchaId.value = res.headers['captcha-id']
+
+    if (captchaImg.value) {
+      URL.revokeObjectURL(captchaImg.value)
+    }
+
+    captchaImg.value = URL.createObjectURL(res.data)
+  } catch (error) {
+    console.error(error)
+    ElMessage.error('验证码加载失败，请检查后端服务和 Redis')
+  }
+}
 
 function restoreLoginState() {
   const savedUser = localStorage.getItem('currentUser')
@@ -398,29 +436,39 @@ function restoreLoginState() {
 async function handleLogin() {
   const username = loginForm.value.username.trim()
   const password = loginForm.value.password.trim()
+  const captchaCode = loginForm.value.captchaCode.trim()
 
   if (!username || !password) {
     ElMessage.warning('请输入用户名和密码')
     return
   }
 
+  if (!captchaCode) {
+    ElMessage.warning('请输入验证码')
+    return
+  }
+
+  if (!captchaId.value) {
+    ElMessage.warning('验证码加载失败，请刷新验证码')
+    await refreshCaptcha()
+    return
+  }
+
   try {
     const res = await axios.post(`${API_BASE_URL}/login`, {
       usrName: username,
-      password
+      password,
+      captchaId: captchaId.value,
+      captchaCode
     })
 
     if (res.data && res.data.success) {
       isLogin.value = true
 
-      // 兼容两种返回格式：
-      // 1. data 直接是用户对象
-      // 2. data = { token, user }
       const loginData = res.data.data
       const user = loginData?.user || loginData
 
       currentUser.value = user
-
       localStorage.setItem('currentUser', JSON.stringify(user))
 
       if (loginData?.token) {
@@ -431,16 +479,22 @@ async function handleLogin() {
 
       ElMessage.success(res.data.message || '登录成功')
 
+      loginForm.value.captchaCode = ''
+
       currentPage.value = 1
       await fetchArticles()
     } else {
       clearLoginState(false)
-      ElMessage.error(res.data.message || '用户名或密码错误')
+      ElMessage.error(res.data.message || '用户名、密码或验证码错误')
+      loginForm.value.captchaCode = ''
+      await refreshCaptcha()
     }
   } catch (error) {
     console.error(error)
     clearLoginState(false)
     ElMessage.error('登录请求失败，请检查后端服务')
+    loginForm.value.captchaCode = ''
+    await refreshCaptcha()
   }
 }
 
@@ -529,6 +583,8 @@ async function handleRegister() {
 
       resetRegisterForm()
       registerDialogVisible.value = false
+
+      await refreshCaptcha()
     } else {
       ElMessage.error(res.data.message || '注册失败')
     }
@@ -560,6 +616,7 @@ function getAvatarUrl(filename) {
 function logout() {
   clearLoginState(true)
   ElMessage.info('已退出登录')
+  refreshCaptcha()
 }
 
 function clearLoginState(needEmit = true) {
@@ -609,5 +666,43 @@ function handleDownload(row) {
 .abstract-tooltip .el-popper__arrow::before {
   background-color: #fffaf0 !important;
   border: 1px solid #e6d7b8 !important;
+}
+
+.captcha-image-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 14px;
+}
+
+.captcha-label-placeholder {
+  width: 70px;
+  flex-shrink: 0;
+}
+
+.captcha-img {
+  width: 120px;
+  height: 40px;
+  border: 1px solid #cfdfe8;
+  border-radius: 8px;
+  cursor: pointer;
+  object-fit: cover;
+  background-color: #f5f9fa;
+}
+
+.captcha-refresh-btn {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 18px;
+  background-color: #8b9aaa;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.captcha-refresh-btn:hover {
+  background-color: #6f7f8f;
 }
 </style>
